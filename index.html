@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>沖縄健康麻雀教室 成績表</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf8ee;
+    --bg-soft: #f7eed8;
+    --ink: #2b2520;
+    --ink-soft: #5a4a3f;
+    --ink-mute: #9c8b7a;
+    --line: #e8dcc4;
+    --paper: #ffffff;
+    --accent: #e8533e;        /* 朱色をビビッドに */
+    --accent-deep: #c43d28;
+    --accent-soft: #ffd9d0;
+    --gold: #f0b942;
+    --bamboo: #5fa83f;        /* 緑も明るめに */
+    --sky: #5ab4d6;
+    --pink: #f08aa8;
+    --rank-1: #f0b942;
+    --rank-2: #b8b0a3;
+    --rank-3: #d97f4c;
+    --rank-4: #6b5d52;
+    --shadow: 6px 6px 0 rgba(232, 83, 62, 0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-feature-settings: "palt";
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(240, 185, 66, 0.12), transparent 35%),
+      radial-gradient(circle at 85% 80%, rgba(95, 168, 63, 0.10), transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(232, 83, 62, 0.04), transparent 60%);
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* ==== Header ==== */
+  header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 32px;
+    align-items: end;
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    border-bottom: 2px dashed var(--line);
+    position: relative;
+  }
+  header::after {
+    content: "";
+    position: absolute;
+    bottom: -5px; left: 0;
+    width: 120px; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: 2px;
+  }
+  .logo-mark {
+    width: 68px; height: 68px;
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    display: grid;
+    place-items: center;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 34px;
+    font-weight: 800;
+    background: var(--gold);
+    color: var(--ink);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transform: rotate(-3deg);
+    transition: transform 0.15s ease;
+  }
+  .logo-mark:hover { transform: rotate(0deg) scale(1.05); }
+  .title-block h1 {
+    font-family: 'Shippori Mincho', serif;
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: 0.02em;
+    line-height: 1.15;
+    margin-bottom: 6px;
+    cursor: pointer;
+  }
+  .title-block h1 .accent {
+    color: var(--accent);
+    position: relative;
+    display: inline-block;
+  }
+  .title-block h1 .accent::after {
+    content: "";
+    position: absolute;
+    bottom: -2px; left: 0; right: 0;
+    height: 6px;
+    background: var(--gold);
+    opacity: 0.5;
+    z-index: -1;
+    border-radius: 3px;
+  }
+  .title-block .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+  }
+  .meta-block {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    line-height: 1.8;
+  }
+  .meta-block .label { color: var(--ink-mute); }
+  .meta-block .val { color: var(--ink); font-weight: 700; }
+
+  /* ==== Period selector ==== */
+  .period-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding: 4px;
+  }
+  .period-chip {
+    padding: 10px 18px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    background: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+  }
+  .period-chip:hover {
+    background: var(--bg-soft);
+    transform: translateY(-2px);
+    border-color: var(--gold);
+  }
+  .period-chip.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 3px 0 var(--accent-deep);
+  }
+  .period-chip .en {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--ink-mute);
+    margin-bottom: 2px;
+  }
+  .period-chip.active .en { color: rgba(255, 255, 255, 0.7); }
+
+  /* ==== Status / source bar ==== */
+  .source-bar {
+    background: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 12px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+  .source-bar .src-label {
+    color: var(--ink-mute);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border-right: 2px dashed var(--line);
+    padding-right: 12px;
+  }
+  .source-bar input {
+    flex: 1;
+    min-width: 200px;
+    border: none;
+    background: transparent;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink);
+    outline: none;
+  }
+  .source-bar button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border-radius: 10px;
+    box-shadow: 0 2px 0 var(--accent-deep);
+    transition: transform 0.1s;
+  }
+  .source-bar button:hover { transform: translateY(-1px); }
+  .source-bar button:active { transform: translateY(1px); box-shadow: none; }
+  .source-bar .status { color: var(--bamboo); font-weight: 700; }
+  .source-bar .toggle-src {
+    color: var(--ink-mute);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    margin-left: auto;
+  }
+  .source-detail { display: none; }
+  .source-detail.visible { display: flex; }
+
+  /* ==== Section ==== */
+  section { margin-bottom: 56px; }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .section-head h2 {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  .section-head .en {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+  }
+  .section-head .rule {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  /* ==== Stats overview ==== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  .stat-card {
+    background: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    padding: 20px;
+    position: relative;
+    transition: transform 0.15s;
+  }
+  .stat-card:hover {
+    transform: translateY(-3px);
+  }
+  .stat-card:nth-child(1) { border-top: 5px solid var(--gold); }
+  .stat-card:nth-child(2) { border-top: 5px solid var(--sky); }
+  .stat-card:nth-child(3) { border-top: 5px solid var(--bamboo); }
+  .stat-card:nth-child(4) { border-top: 5px solid var(--accent); }
+  .stat-card .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .stat-card .stat-value {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .stat-card .stat-sub {
+    font-size: 11px;
+    color: var(--ink-mute);
+    margin-top: 6px;
+  }
+
+  /* ==== Ranking table ==== */
+  .ranking {
+    background: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .ranking table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .ranking th {
+    text-align: left;
+    padding: 14px 20px;
+    background: var(--bg-soft);
+    border-bottom: 3px solid var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .ranking th.num, .ranking td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .ranking th.center, .ranking td.center { text-align: center; }
+  .ranking td {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .ranking tr:last-child td { border-bottom: none; }
+  .ranking tr.row { cursor: pointer; transition: background 0.1s; }
+  .ranking tr.row:hover { background: var(--bg-soft); }
+  .ranking tr.row:hover .player-name { color: var(--accent); }
+  .ranking .rank-cell {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 20px;
+    font-weight: 700;
+    width: 70px;
+    text-align: center;
+  }
+  .ranking .rank-1 { color: var(--rank-1); }
+  .ranking .rank-2 { color: var(--rank-2); }
+  .ranking .rank-3 { color: var(--rank-3); }
+  .ranking .player-name {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 17px;
+    font-weight: 700;
+    transition: color 0.15s;
+  }
+  .ranking .player-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-mute);
+    margin-right: 8px;
+  }
+  .ranking .points {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .ranking .points.pos { color: var(--bamboo); }
+  .ranking .points.neg { color: var(--accent); }
+  .ranking .games-mini {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-mute);
+    margin-left: 10px;
+  }
+  .ranking .rank-dist {
+    display: inline-flex;
+    gap: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+  .ranking .rank-dist span {
+    background: var(--bg-soft);
+    padding: 3px 9px;
+    color: var(--ink-soft);
+    border-radius: 10px;
+    font-weight: 700;
+  }
+  .ranking .arrow-link {
+    color: var(--ink-mute);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+  }
+
+  /* ==== Recent results ==== */
+  .records {
+    background: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .record-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 24px;
+    padding: 18px 20px;
+    border-bottom: 1px dashed var(--line);
+    align-items: center;
+  }
+  .record-row:last-child { border-bottom: none; }
+  .record-row:hover { background: var(--bg-soft); }
+  .record-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-mute);
+    line-height: 1.6;
+    border-right: 2px dashed var(--line);
+    padding-right: 14px;
+  }
+  .record-time .date { display: block; font-size: 14px; color: var(--ink); font-weight: 700; }
+  .record-results {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .result-slot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--bg-soft);
+    border-left: 4px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .result-slot:hover { transform: translateY(-2px); }
+  .result-slot.r1 { border-left-color: var(--gold); background: rgba(240, 185, 66, 0.12); }
+  .result-slot.r2 { border-left-color: var(--sky); background: rgba(90, 180, 214, 0.08); }
+  .result-slot.r3 { border-left-color: var(--rank-3); background: rgba(217, 127, 76, 0.08); }
+  .result-slot.r4 { border-left-color: var(--rank-4); }
+  .result-rank {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    width: 18px;
+    text-align: center;
+  }
+  .result-slot.r1 .result-rank { color: var(--rank-1); }
+  .result-info { flex: 1; min-width: 0; }
+  .result-name {
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .result-name .pn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    margin-right: 4px;
+    font-weight: 400;
+  }
+  .result-name .seat-tag {
+    display: inline-block;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 10px;
+    background: var(--ink);
+    color: var(--gold);
+    padding: 1px 5px;
+    border-radius: 4px;
+    margin-right: 4px;
+    font-weight: 700;
+    vertical-align: middle;
+  }
+  .result-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-mute);
+  }
+  .result-pt {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .result-pt.pos { color: var(--bamboo); }
+  .result-pt.neg { color: var(--accent); }
+
+  /* ==== Player page ==== */
+  .player-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 32px;
+    align-items: center;
+    background: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    padding: 32px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .player-header::before {
+    content: "";
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, var(--accent-soft), transparent 70%);
+    border-radius: 50%;
+    z-index: 0;
+  }
+  .player-header > * { position: relative; z-index: 1; }
+  .player-avatar {
+    width: 96px; height: 96px;
+    border: 3px solid var(--ink);
+    background: var(--gold);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 44px;
+    font-weight: 800;
+    box-shadow: var(--shadow);
+    color: var(--ink);
+  }
+  .player-headline h2 {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .player-headline .pn-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+  }
+  .player-headline .pt-summary {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    margin-top: 12px;
+  }
+  .player-headline .pt-summary.pos { color: var(--bamboo); }
+  .player-headline .pt-summary.neg { color: var(--accent); }
+  .back-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    cursor: pointer;
+    align-self: start;
+  }
+  .back-link:hover { color: var(--accent); }
+
+  /* ==== Player stats grid ==== */
+  .player-stats {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .player-stat {
+    background: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    transition: transform 0.15s;
+  }
+  .player-stat:hover { transform: translateY(-3px); }
+  .player-stat .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .player-stat .value {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .player-stat .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    margin-top: 4px;
+  }
+  .player-stat.r1 .value { color: var(--rank-1); }
+  .player-stat.r2 .value { color: var(--rank-2); }
+  .player-stat.r3 .value { color: var(--rank-3); }
+  .player-stat.r4 .value { color: var(--rank-4); }
+  .player-stat.best .value { color: var(--bamboo); }
+  .player-stat.worst .value { color: var(--accent); }
+
+  /* ==== Chart ==== */
+  .chart-wrap {
+    background: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 40px;
+  }
+  .chart-wrap svg { width: 100%; height: auto; display: block; }
+
+  /* ==== Footer ==== */
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    letter-spacing: 0.15em;
+  }
+
+  /* ==== Empty state ==== */
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    font-family: 'Shippori Mincho', serif;
+    color: var(--ink-mute);
+    background: var(--paper);
+    border: 2px dashed var(--line);
+    border-radius: 18px;
+  }
+  .empty-state .emoji { font-size: 36px; margin-bottom: 12px; opacity: 0.6; }
+
+  /* ==== Responsive ==== */
+  @media (max-width: 880px) {
+    .container { padding: 28px 16px 56px; }
+    header { grid-template-columns: auto 1fr; gap: 16px; }
+    .meta-block { display: none; }
+    .title-block h1 { font-size: 22px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .ranking { overflow-x: auto; }
+    .ranking table { min-width: 600px; }
+    .record-results { grid-template-columns: repeat(2, 1fr); }
+    .player-header { grid-template-columns: auto 1fr; padding: 20px; gap: 16px; }
+    .player-avatar { width: 64px; height: 64px; font-size: 28px; }
+    .player-headline h2 { font-size: 24px; }
+    .player-headline .pt-summary { font-size: 18px; }
+    .back-link { grid-column: 1 / -1; }
+    .player-stats { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-mark" onclick="navigateTo('')">雀</div>
+    <div class="title-block">
+      <h1 onclick="navigateTo('')">沖縄健康<span class="accent">麻雀</span>教室</h1>
+      <div class="subtitle">OKINAWA HEALTH MAHJONG · 成績表</div>
+    </div>
+    <div class="meta-block">
+      <div><span class="label">RULE</span> &nbsp; <span class="val">4人打ち / 半荘</span></div>
+      <div><span class="label">UPD</span> &nbsp; <span class="val" id="lastUpdate">—</span></div>
+    </div>
+  </header>
+
+  <div class="source-bar">
+    <span class="status" id="status">● サンプルデータ表示中</span>
+    <span class="toggle-src" onclick="toggleSource()">[ データソース ]</span>
+  </div>
+  <div class="source-bar source-detail" id="sourceDetail">
+    <div class="src-label">RESULTS</div>
+    <input type="text" id="sheetUrl" placeholder="「結果」シートのURL">
+    <button onclick="loadData()">読込</button>
+  </div>
+  <div class="source-bar source-detail" id="sourceDetail2">
+    <div class="src-label">PLAYERS</div>
+    <input type="text" id="masterUrl" placeholder="「選手マスタ」シートのURL">
+  </div>
+
+  <!-- ==== ホーム画面 ==== -->
+  <div id="homeView">
+    <div class="period-bar" id="periodBar"></div>
+
+    <section>
+      <div class="section-head">
+        <h2>概況</h2>
+        <span class="en">OVERVIEW</span>
+        <div class="rule"></div>
+      </div>
+      <div class="stats-grid" id="statsGrid"></div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>順位表</h2>
+        <span class="en">RANKING</span>
+        <div class="rule"></div>
+      </div>
+      <div id="rankingWrap"></div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>対局履歴</h2>
+        <span class="en">RECENT GAMES</span>
+        <div class="rule"></div>
+      </div>
+      <div id="recordsList"></div>
+    </section>
+  </div>
+
+  <!-- ==== 個人ページ ==== -->
+  <div id="playerView" style="display:none;">
+    <div class="player-header">
+      <div class="player-avatar" id="playerAvatar">—</div>
+      <div class="player-headline">
+        <h2 id="playerName">—</h2>
+        <div class="pn-tag" id="playerNumber">—</div>
+        <div class="pt-summary" id="playerTotalPt">—</div>
+      </div>
+      <div class="back-link" onclick="navigateTo('')">← 戻る</div>
+    </div>
+
+    <div class="period-bar" id="playerPeriodBar"></div>
+
+    <section>
+      <div class="section-head">
+        <h2>成績</h2>
+        <span class="en">PROFILE</span>
+        <div class="rule"></div>
+      </div>
+      <div class="player-stats" id="playerStats"></div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>累計pt推移</h2>
+        <span class="en">PT TIMELINE</span>
+        <div class="rule"></div>
+      </div>
+      <div class="chart-wrap" id="chartWrap"></div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>対局履歴</h2>
+        <span class="en">RECENT GAMES</span>
+        <div class="rule"></div>
+      </div>
+      <div id="playerRecords"></div>
+    </section>
+  </div>
+
+  <footer>
+    <div>© 沖縄健康麻雀教室</div>
+    <div id="dataInfo">SAMPLE DATA</div>
+  </footer>
+</div>
+
+<script>
+'use strict';
+
+// ============================================================
+// 設定
+// ============================================================
+const DEFAULT_RESULTS_URL = "https://docs.google.com/spreadsheets/d/1UIW0AlUXw_wTGIqj5SgknXzDFJ6lntBK_wxB8AFbtDA/edit?gid=1476038675#gid=1476038675";
+const DEFAULT_MASTER_URL  = "https://docs.google.com/spreadsheets/d/1stJBEEFYzWuL6DEEKU-m2qdaMufWRgVTy1M2GEiiQOI/edit?gid=0#gid=0";
+const AUTO_REFRESH_MS = 30000;   // 30秒ごとに自動更新(0で無効)
+
+// ウマ・オカ
+const UMA = [30, 10, -10, -30];
+const RETURN_PT = 30000;
+const ORIGIN_PT = 25000;
+
+// ============================================================
+// サンプルデータ生成
+// ============================================================
+const POOL = [
+  '比嘉','金城','大城','宮城','上原','新垣','玉城','島袋',
+  '仲宗根','山田','照屋','當間','与那覇','安里','謝花','宮里',
+  '長嶺','仲井真','屋良','石川'
+];
+const PLAYER_MASTER_SAMPLE = POOL.map((name, i) => ({ num: 101 + i, name }));
+
+function generateSampleRows() {
+  const rows = [];
+  let seed = 42;
+  const rand = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+  const seatNames = ['東', '南', '西', '北'];
+
+  // 過去90日くらいに渡って、1日2-6半荘くらい記録
+  const today = new Date();
+  for (let dayOffset = 90; dayOffset >= 0; dayOffset--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - dayOffset);
+    // 週に1-2日は休み(対局なし)を入れる
+    if (rand() < 0.2) continue;
+    const gamesToday = 2 + Math.floor(rand() * 5); // 2-6半荘
+    for (let g = 0; g < gamesToday; g++) {
+      const ts = new Date(date);
+      ts.setHours(13 + g * 2, Math.floor(rand() * 60), Math.floor(rand() * 60));
+      // ランダムに4人選出して、東南西北を割り当て
+      const shuffled = [...PLAYER_MASTER_SAMPLE].sort(() => rand() - 0.5);
+      const picked = shuffled.slice(0, 4);
+      let scores = [
+        25000 + Math.floor(rand() * 25000),
+        25000 + Math.floor(rand() * 10000) - 5000,
+        25000 - Math.floor(rand() * 10000),
+        25000 - Math.floor(rand() * 20000),
+      ];
+      const sum = scores.reduce((s, v) => s + v, 0);
+      scores[0] += (100000 - sum);
+      scores = scores.map(s => Math.round(s / 100) * 100);
+      const diff = 100000 - scores.reduce((s, v) => s + v, 0);
+      scores[0] += diff;
+      // 持ち点配列とプレイヤーをランダムにシャッフル(席順は持ち点とは独立)
+      const playerScorePairs = picked.map((p, i) => ({ player: p, score: scores[i] }));
+      playerScorePairs.sort(() => rand() - 0.5);
+      rows.push({
+        timestamp: ts.getTime(),
+        gameDate: ts.getTime(),
+        players: playerScorePairs.map((pair, i) => ({
+          num: pair.player.num,
+          name: pair.player.name,
+          score: pair.score,
+          seat: seatNames[i]
+        }))
+      });
+    }
+  }
+  return rows;
+}
+const SAMPLE_ROWS = generateSampleRows();
+
+// ============================================================
+// ポイント計算(同点ウマオカ山分け対応)
+// ============================================================
+function calcPoints(playersSortedByScoreDesc) {
+  const n = playersSortedByScoreDesc.length;
+  const groups = [];
+  let i = 0;
+  while (i < n) {
+    let j = i;
+    while (j + 1 < n && playersSortedByScoreDesc[j + 1].score === playersSortedByScoreDesc[i].score) j++;
+    groups.push({
+      indices: Array.from({length: j - i + 1}, (_, k) => i + k),
+      startRank: i + 1,
+      endRank: j + 1
+    });
+    i = j + 1;
+  }
+  const okaTotal = (RETURN_PT - ORIGIN_PT) * 4 / 1000;
+  return playersSortedByScoreDesc.map((p, idx) => {
+    const group = groups.find(g => g.indices.includes(idx));
+    const groupSize = group.indices.length;
+    let umaSum = 0;
+    for (let r = group.startRank; r <= group.endRank; r++) umaSum += UMA[r - 1];
+    const umaAvg = umaSum / groupSize;
+    let okaShare = 0;
+    if (group.startRank === 1) okaShare = okaTotal / groupSize;
+    const pt = (p.score - RETURN_PT) / 1000 + umaAvg + okaShare;
+    return { ...p, rank: group.startRank, pt: Math.round(pt * 10) / 10 };
+  });
+}
+
+// ============================================================
+// 状態
+// ============================================================
+let playerMaster = {};
+let allRows = [];
+let allGames = []; // 計算済みの全対局
+let currentPeriod = 'all'; // 'all' | 'YYYY-MM'
+let currentView = 'home'; // 'home' | 'player'
+let currentPlayerNum = null;
+let autoRefreshTimer = null;
+
+// 初期マスタ(サンプル用)
+PLAYER_MASTER_SAMPLE.forEach(p => { playerMaster[p.num] = p.name; });
+
+// ============================================================
+// データ処理
+// ============================================================
+function processRows(rows) {
+  return rows.map(row => ({
+    timestamp: row.timestamp,
+    gameDate: row.gameDate || row.timestamp,
+    results: calcPoints([...row.players].sort((a, b) => b.score - a.score))
+  })).sort((a, b) => b.timestamp - a.timestamp);
+}
+
+function filterByPeriod(games, period) {
+  if (period === 'all') return games;
+  // period = 'YYYY-MM'
+  return games.filter(g => {
+    const d = new Date(g.gameDate || g.timestamp);
+    const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    return ym === period;
+  });
+}
+
+function getAvailablePeriods(games) {
+  const months = new Set();
+  games.forEach(g => {
+    const d = new Date(g.gameDate || g.timestamp);
+    months.add(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+  });
+  // 通算 + 月別(新しい順)
+  return ['all', ...Array.from(months).sort().reverse()];
+}
+
+function aggregatePlayers(games) {
+  const map = {};
+  games.forEach(g => g.results.forEach(r => {
+    const key = r.num;
+    if (!map[key]) map[key] = { num: r.num, name: r.name, totalPt: 0, games: 0, ranks: [0,0,0,0] };
+    map[key].totalPt += r.pt;
+    map[key].games += 1;
+    map[key].ranks[r.rank - 1] += 1;
+    map[key].name = r.name; // 最新のマスタ名を反映
+  }));
+  return Object.values(map).map(p => ({
+    ...p,
+    totalPt: Math.round(p.totalPt * 10) / 10,
+    avgRank: p.games > 0 ? Math.round((p.ranks.reduce((s, c, i) => s + c * (i+1), 0) / p.games) * 100) / 100 : 0,
+    rates: p.ranks.map(c => p.games > 0 ? Math.round((c / p.games) * 1000) / 10 : 0)
+  })).sort((a, b) => b.totalPt - a.totalPt);
+}
+
+// ============================================================
+// ホーム画面の描画
+// ============================================================
+function periodLabel(period) {
+  if (period === 'all') return { jp: '通算', en: 'ALL-TIME' };
+  const [y, m] = period.split('-');
+  return { jp: `${parseInt(m)}月`, en: `${y}.${m}` };
+}
+
+function renderPeriodBar(containerId, periods, onClick) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = periods.map(p => {
+    const lbl = periodLabel(p);
+    const active = p === currentPeriod ? 'active' : '';
+    return `<button class="period-chip ${active}" data-period="${p}">
+      <span class="en">${lbl.en}</span>${lbl.jp}
+    </button>`;
+  }).join('');
+  container.querySelectorAll('.period-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      currentPeriod = chip.dataset.period;
+      onClick();
+    });
+  });
+}
+
+function renderHome() {
+  const periods = getAvailablePeriods(allGames);
+  if (!periods.includes(currentPeriod)) currentPeriod = 'all';
+
+  renderPeriodBar('periodBar', periods, renderHome);
+
+  const filtered = filterByPeriod(allGames, currentPeriod);
+  const players = aggregatePlayers(filtered);
+  renderHomeStats(filtered, players);
+  renderHomeRanking(players);
+  renderHomeRecords(filtered);
+}
+
+function renderHomeStats(games, players) {
+  const totalGames = games.length;
+  const totalPlayers = players.length;
+  const top = players[0];
+  const periodLbl = periodLabel(currentPeriod);
+
+  let periodRange = '';
+  if (games.length > 0) {
+    const dates = games.map(g => new Date(g.gameDate || g.timestamp));
+    const min = new Date(Math.min(...dates));
+    const max = new Date(Math.max(...dates));
+    if (min.toDateString() === max.toDateString()) {
+      periodRange = formatDateShort(min);
+    } else {
+      periodRange = `${formatDateShort(min)} 〜 ${formatDateShort(max)}`;
+    }
+  }
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">PERIOD</div>
+      <div class="stat-value" style="font-size:26px;">${periodLbl.jp}</div>
+      <div class="stat-sub">${periodRange || '—'}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">GAMES</div>
+      <div class="stat-value">${totalGames}</div>
+      <div class="stat-sub">対局数</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">PLAYERS</div>
+      <div class="stat-value">${totalPlayers}</div>
+      <div class="stat-sub">参加人数</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">LEADER</div>
+      <div class="stat-value" style="font-size:22px;">${top ? top.name : '—'}</div>
+      <div class="stat-sub">${top ? ((top.totalPt > 0 ? '+' : '') + top.totalPt + ' pt') : '—'}</div>
+    </div>
+  `;
+}
+
+function renderHomeRanking(players) {
+  if (players.length === 0) {
+    document.getElementById('rankingWrap').innerHTML = `<div class="empty-state"><div class="emoji">🀄</div>この期間の記録はまだありません</div>`;
+    return;
+  }
+  const rows = players.map((p, i) => {
+    const rank = i + 1;
+    const rankClass = rank <= 3 ? `rank-${rank}` : '';
+    const ptClass = p.totalPt >= 0 ? 'pos' : 'neg';
+    const ptStr = (p.totalPt > 0 ? '+' : '') + p.totalPt.toFixed(1);
+    return `
+      <tr class="row" onclick="navigateTo('player=${p.num}')">
+        <td class="rank-cell ${rankClass}">${rank}</td>
+        <td>
+          <span class="player-num">#${p.num}</span><span class="player-name">${p.name}</span>
+          <span class="games-mini">${p.games}半荘</span>
+        </td>
+        <td class="num"><span class="points ${ptClass}">${ptStr}</span></td>
+        <td class="num">${p.avgRank.toFixed(2)}</td>
+        <td class="center">
+          <span class="rank-dist">
+            <span>${p.ranks[0]}</span>
+            <span>${p.ranks[1]}</span>
+            <span>${p.ranks[2]}</span>
+            <span>${p.ranks[3]}</span>
+          </span>
+        </td>
+        <td class="num arrow-link">→</td>
+      </tr>
+    `;
+  }).join('');
+  document.getElementById('rankingWrap').innerHTML = `
+    <div class="ranking">
+      <table>
+        <thead>
+          <tr>
+            <th class="center">順位</th>
+            <th>プレイヤー</th>
+            <th class="num">累計pt</th>
+            <th class="num">平均順位</th>
+            <th class="center">着順分布</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderHomeRecords(games) {
+  const recent = games.slice(0, 30); // 最新30件
+  if (recent.length === 0) {
+    document.getElementById('recordsList').innerHTML = `<div class="empty-state"><div class="emoji">🎴</div>対局履歴がありません</div>`;
+    return;
+  }
+  document.getElementById('recordsList').innerHTML = `<div class="records">` +
+    recent.map(g => renderGameRow(g)).join('') +
+  `</div>`;
+}
+
+function renderGameRow(g) {
+  const d = new Date(g.gameDate || g.timestamp);
+  return `
+    <div class="record-row">
+      <div class="record-time">
+        <span class="date">${formatDateShort(d)}</span>
+        ${formatYear(d)}
+      </div>
+      <div class="record-results">
+        ${g.results.map(r => {
+          const ptClass = r.pt >= 0 ? 'pos' : 'neg';
+          const ptStr = (r.pt > 0 ? '+' : '') + r.pt.toFixed(1);
+          const seatTag = r.seat ? `<span class="seat-tag">${r.seat}</span>` : '';
+          return `
+            <div class="result-slot r${r.rank}" onclick="navigateTo('player=${r.num}')">
+              <div class="result-rank">${r.rank}</div>
+              <div class="result-info">
+                <div class="result-name">${seatTag}<span class="pn">#${r.num}</span>${r.name}</div>
+                <div class="result-score">${r.score.toLocaleString()}</div>
+              </div>
+              <div class="result-pt ${ptClass}">${ptStr}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function formatYear(d) {
+  return d.getFullYear();
+}
+
+function formatDateShort(d) {
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+function formatDateFull(d) {
+  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// ============================================================
+// 個人ページの描画
+// ============================================================
+function renderPlayerPage(num) {
+  const periods = getAvailablePeriods(allGames);
+  if (!periods.includes(currentPeriod)) currentPeriod = 'all';
+
+  renderPeriodBar('playerPeriodBar', periods, () => renderPlayerPage(num));
+
+  const filtered = filterByPeriod(allGames, currentPeriod);
+  // この選手が含まれる対局だけ
+  const playerGames = filtered.filter(g => g.results.some(r => r.num === num));
+  const playerResults = playerGames.flatMap(g => g.results.filter(r => r.num === num).map(r => ({ ...r, timestamp: g.timestamp, gameDate: g.gameDate || g.timestamp })));
+
+  const name = playerMaster[num] || (playerResults[0] && playerResults[0].name) || `#${num}`;
+
+  // ヘッダー
+  document.getElementById('playerAvatar').textContent = name.charAt(0);
+  document.getElementById('playerName').textContent = name;
+  document.getElementById('playerNumber').textContent = `PLAYER #${num} · ${periodLabel(currentPeriod).jp}`;
+
+  const totalPt = playerResults.reduce((s, r) => s + r.pt, 0);
+  const totalPtRounded = Math.round(totalPt * 10) / 10;
+  const totalPtEl = document.getElementById('playerTotalPt');
+  totalPtEl.textContent = (totalPtRounded > 0 ? '+' : '') + totalPtRounded.toFixed(1) + ' pt';
+  totalPtEl.className = 'pt-summary ' + (totalPtRounded >= 0 ? 'pos' : 'neg');
+
+  // 統計
+  renderPlayerStats(playerResults);
+
+  // チャート
+  renderPlayerChart(playerResults);
+
+  // 対局履歴
+  renderPlayerRecords(playerGames);
+}
+
+function renderPlayerStats(results) {
+  const games = results.length;
+  if (games === 0) {
+    document.getElementById('playerStats').innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;"><div class="emoji">🎴</div>この期間の対局はありません</div>`;
+    return;
+  }
+  const ranks = [0,0,0,0];
+  results.forEach(r => { ranks[r.rank - 1]++; });
+  const avgRank = ranks.reduce((s, c, i) => s + c * (i+1), 0) / games;
+  const rates = ranks.map(c => (c / games) * 100);
+  const pts = results.map(r => r.pt);
+  const best = Math.max(...pts);
+  const worst = Math.min(...pts);
+  const avgPt = pts.reduce((s, v) => s + v, 0) / games;
+
+  document.getElementById('playerStats').innerHTML = `
+    <div class="player-stat">
+      <div class="label">GAMES</div>
+      <div class="value">${games}</div>
+      <div class="sub">対局数</div>
+    </div>
+    <div class="player-stat">
+      <div class="label">AVG RANK</div>
+      <div class="value">${avgRank.toFixed(2)}</div>
+      <div class="sub">平均順位</div>
+    </div>
+    <div class="player-stat">
+      <div class="label">AVG PT</div>
+      <div class="value" style="font-size:22px;">${avgPt >= 0 ? '+' : ''}${avgPt.toFixed(1)}</div>
+      <div class="sub">平均pt</div>
+    </div>
+    <div class="player-stat r1">
+      <div class="label">TOP</div>
+      <div class="value">${rates[0].toFixed(1)}<span style="font-size:14px;">%</span></div>
+      <div class="sub">1位 (${ranks[0]}回)</div>
+    </div>
+    <div class="player-stat r2">
+      <div class="label">2ND</div>
+      <div class="value">${rates[1].toFixed(1)}<span style="font-size:14px;">%</span></div>
+      <div class="sub">2位 (${ranks[1]}回)</div>
+    </div>
+    <div class="player-stat r3">
+      <div class="label">3RD</div>
+      <div class="value">${rates[2].toFixed(1)}<span style="font-size:14px;">%</span></div>
+      <div class="sub">3位 (${ranks[2]}回)</div>
+    </div>
+    <div class="player-stat r4">
+      <div class="label">LAST</div>
+      <div class="value">${rates[3].toFixed(1)}<span style="font-size:14px;">%</span></div>
+      <div class="sub">4位 (${ranks[3]}回)</div>
+    </div>
+    <div class="player-stat best">
+      <div class="label">BEST</div>
+      <div class="value" style="font-size:22px;">+${best.toFixed(1)}</div>
+      <div class="sub">最高pt</div>
+    </div>
+    <div class="player-stat worst">
+      <div class="label">WORST</div>
+      <div class="value" style="font-size:22px;">${worst.toFixed(1)}</div>
+      <div class="sub">最低pt</div>
+    </div>
+  `;
+}
+
+function renderPlayerChart(results) {
+  const wrap = document.getElementById('chartWrap');
+  if (results.length === 0) {
+    wrap.innerHTML = `<div style="text-align:center;color:var(--ink-mute);padding:40px;font-family:'Shippori Mincho',serif;">データなし</div>`;
+    return;
+  }
+  // 時系列順に並べて累積ptを算出
+  const sorted = [...results].sort((a, b) => a.timestamp - b.timestamp);
+  let cum = 0;
+  const points = sorted.map(r => {
+    cum += r.pt;
+    return { t: r.gameDate || r.timestamp, cum: Math.round(cum * 10) / 10, pt: r.pt };
+  });
+
+  // SVG生成
+  const W = 1080;
+  const H = 320;
+  const padL = 60, padR = 20, padT = 24, padB = 40;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  const minCum = Math.min(0, ...points.map(p => p.cum));
+  const maxCum = Math.max(0, ...points.map(p => p.cum));
+  const range = maxCum - minCum || 1;
+  const yPad = range * 0.1;
+  const yMin = minCum - yPad;
+  const yMax = maxCum + yPad;
+  const yRange = yMax - yMin;
+
+  const xOf = i => padL + (points.length === 1 ? innerW / 2 : (i / (points.length - 1)) * innerW);
+  const yOf = v => padT + innerH - ((v - yMin) / yRange) * innerH;
+  const y0 = yOf(0);
+
+  // 軸ラベル(y方向に5本)
+  const yTicks = [];
+  for (let i = 0; i <= 4; i++) {
+    const v = yMin + (yRange * i / 4);
+    yTicks.push({ v: Math.round(v * 10) / 10, y: yOf(v) });
+  }
+
+  // 経路
+  const pathD = points.map((p, i) => (i === 0 ? 'M' : 'L') + xOf(i).toFixed(1) + ',' + yOf(p.cum).toFixed(1)).join(' ');
+  const areaD = pathD + ` L ${xOf(points.length - 1).toFixed(1)},${y0.toFixed(1)} L ${xOf(0).toFixed(1)},${y0.toFixed(1)} Z`;
+
+  // x軸の日付ラベル(最大6個)
+  const labelCount = Math.min(6, points.length);
+  const xLabels = [];
+  for (let i = 0; i < labelCount; i++) {
+    const idx = points.length === 1 ? 0 : Math.round((i / (labelCount - 1)) * (points.length - 1));
+    const d = new Date(points[idx].t);
+    xLabels.push({ x: xOf(idx), label: formatDateShort(d) });
+  }
+
+  wrap.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+      <!-- グリッド -->
+      ${yTicks.map(t => `<line x1="${padL}" x2="${W - padR}" y1="${t.y}" y2="${t.y}" stroke="var(--line)" stroke-width="1"/>`).join('')}
+      <!-- ゼロライン -->
+      <line x1="${padL}" x2="${W - padR}" y1="${y0}" y2="${y0}" stroke="var(--ink-mute)" stroke-width="1" stroke-dasharray="4,4"/>
+      <!-- 面塗り -->
+      <path d="${areaD}" fill="var(--accent)" fill-opacity="0.12"/>
+      <!-- ライン -->
+      <path d="${pathD}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+      <!-- ポイント -->
+      ${points.map((p, i) => {
+        const cx = xOf(i);
+        const cy = yOf(p.cum);
+        return `<circle cx="${cx}" cy="${cy}" r="4" fill="var(--paper)" stroke="var(--accent)" stroke-width="2"><title>${formatDateShort(new Date(p.t))} : 累計${p.cum > 0 ? '+' : ''}${p.cum}pt (この対局 ${p.pt > 0 ? '+' : ''}${p.pt}pt)</title></circle>`;
+      }).join('')}
+      <!-- Y軸ラベル -->
+      ${yTicks.map(t => `<text x="${padL - 8}" y="${t.y + 4}" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-mute)">${t.v > 0 ? '+' : ''}${t.v}</text>`).join('')}
+      <!-- X軸ラベル -->
+      ${xLabels.map(l => `<text x="${l.x}" y="${H - padB + 18}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-mute)">${l.label}</text>`).join('')}
+    </svg>
+  `;
+}
+
+function renderPlayerRecords(games) {
+  if (games.length === 0) {
+    document.getElementById('playerRecords').innerHTML = `<div class="empty-state"><div class="emoji">🎴</div>対局履歴がありません</div>`;
+    return;
+  }
+  const recent = games.slice(0, 30);
+  document.getElementById('playerRecords').innerHTML = `<div class="records">` +
+    recent.map(g => renderGameRow(g)).join('') +
+  `</div>`;
+}
+
+// ============================================================
+// ナビゲーション(URLハッシュ)
+// ============================================================
+function navigateTo(hash) {
+  location.hash = hash;
+}
+
+function handleRoute() {
+  const hash = location.hash.replace('#', '');
+  if (hash.startsWith('player=')) {
+    const num = parseInt(hash.split('=')[1]);
+    currentView = 'player';
+    currentPlayerNum = num;
+    document.getElementById('homeView').style.display = 'none';
+    document.getElementById('playerView').style.display = '';
+    renderPlayerPage(num);
+  } else {
+    currentView = 'home';
+    currentPlayerNum = null;
+    document.getElementById('homeView').style.display = '';
+    document.getElementById('playerView').style.display = 'none';
+    renderHome();
+  }
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', handleRoute);
+
+// ============================================================
+// データ読込
+// ============================================================
+function buildCsvUrl(url) {
+  const m = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (!m) return url;
+  const id = m[1];
+  const gidMatch = url.match(/[?&#]gid=(\d+)/);
+  const gid = gidMatch ? gidMatch[1] : '0';
+  return `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
+}
+
+async function loadData(silent = false) {
+  const url = document.getElementById('sheetUrl').value.trim();
+  const masterUrl = document.getElementById('masterUrl').value.trim();
+  const status = document.getElementById('status');
+
+  if (!url) {
+    // サンプル
+    playerMaster = {};
+    PLAYER_MASTER_SAMPLE.forEach(p => { playerMaster[p.num] = p.name; });
+    allRows = SAMPLE_ROWS;
+    allGames = processRows(allRows);
+    status.textContent = '● サンプルデータ表示中';
+    status.style.color = 'var(--ink-mute)';
+    document.getElementById('dataInfo').textContent = 'SAMPLE DATA';
+    handleRoute();
+    stopAutoRefresh();
+    return;
+  }
+
+  try {
+    if (!silent) status.textContent = '○ 読込中...';
+
+    if (masterUrl) {
+      const r = await fetch(buildCsvUrl(masterUrl) + '&_=' + Date.now());
+      if (!r.ok) throw new Error('選手マスタ読込失敗');
+      playerMaster = parseMasterCSV(await r.text());
+    }
+    const r = await fetch(buildCsvUrl(url) + '&_=' + Date.now());
+    if (!r.ok) throw new Error('結果読込失敗');
+    allRows = parseCSV(await r.text());
+    allGames = processRows(allRows);
+
+    const now = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const masterCount = Object.keys(playerMaster).length;
+    status.textContent = `● 更新 ${now} (${allRows.length}対局${masterCount > 0 ? ` / 選手 ${masterCount}名` : ''})`;
+    status.style.color = 'var(--bamboo)';
+    document.getElementById('dataInfo').textContent = 'GOOGLE SHEETS · ' + allRows.length + ' GAMES';
+    handleRoute();
+    startAutoRefresh();
+  } catch (e) {
+    status.textContent = '✕ ' + e.message;
+    status.style.color = 'var(--accent)';
+  }
+  document.getElementById('lastUpdate').textContent = new Date().toLocaleDateString('ja-JP');
+}
+
+function parseMasterCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const map = {};
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',').map(s => s.trim());
+    if (cols.length < 2) continue;
+    const num = parseInt(cols[0]);
+    const name = cols[1];
+    if (!isNaN(num) && name) map[num] = name;
+  }
+  return map;
+}
+
+// 結果CSV: 対局日, 東家選手番号, 東家点数, 南家選手番号, 南家点数, 西家選手番号, 西家点数, 北家選手番号, 北家点数, 送信日時 (10列)
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',').map(s => s.trim());
+    if (cols.length < 10) continue;
+    const players = [];
+    let valid = true;
+    // 東南西北の順に並んでいるので、それぞれを取り出す
+    // col[0]=対局日, col[1]=東家num, col[2]=東家score, col[3]=南家num, col[4]=南家score, ...
+    const seatNames = ['東', '南', '西', '北'];
+    for (let p = 0; p < 4; p++) {
+      const base = 1 + p * 2;
+      const num = parseInt(cols[base]);
+      const score = parseInt(cols[base + 1]);
+      if (isNaN(num) || isNaN(score)) { valid = false; break; }
+      const name = playerMaster[num] || `#${num}`;
+      players.push({ num, name, score, seat: seatNames[p] });
+    }
+    if (!valid) continue;
+
+    // 対局日(col[0])と送信日時(col[9])を解釈
+    // 送信日時の方が時刻情報として確実なので、それをtimestampに採用
+    // (対局日は日付のみなので、複数対局の順序が決まらない)
+    const gameDateRaw = cols[0];
+    const submittedRaw = cols[9];
+
+    let ts = Date.parse(submittedRaw);
+    if (isNaN(ts)) ts = Date.parse(gameDateRaw);
+    if (isNaN(ts)) ts = i;
+
+    // 表示用の日付は「対局日」を優先(送信日時とずれる可能性があるため)
+    let gameDate = Date.parse(gameDateRaw);
+    if (isNaN(gameDate)) gameDate = ts;
+
+    rows.push({
+      timestamp: ts,
+      gameDate: gameDate, // 表示用の日付(対局日)
+      players
+    });
+  }
+  return rows;
+}
+
+function startAutoRefresh() {
+  if (AUTO_REFRESH_MS <= 0) return;
+  stopAutoRefresh();
+  autoRefreshTimer = setInterval(() => loadData(true), AUTO_REFRESH_MS);
+}
+function stopAutoRefresh() {
+  if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+}
+
+function toggleSource() {
+  document.getElementById('sourceDetail').classList.toggle('visible');
+  document.getElementById('sourceDetail2').classList.toggle('visible');
+}
+
+// ============================================================
+// 初期化
+// ============================================================
+if (DEFAULT_RESULTS_URL) {
+  document.getElementById('sheetUrl').value = DEFAULT_RESULTS_URL;
+  document.getElementById('masterUrl').value = DEFAULT_MASTER_URL;
+  loadData();
+} else {
+  allRows = SAMPLE_ROWS;
+  allGames = processRows(allRows);
+  handleRoute();
+}
+</script>
+</body>
+</html>
