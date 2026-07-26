@@ -702,6 +702,47 @@
   .player-stat.best .value { color: var(--bamboo); }
   .player-stat.worst .value { color: var(--accent); }
 
+  /* ==== Admin controls ==== */
+  .admin-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--ink-mute);
+  }
+  .admin-login-link {
+    cursor: pointer;
+    opacity: 0.4;
+    padding: 4px 10px;
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    transition: all 0.15s;
+  }
+  .admin-login-link:hover {
+    opacity: 1;
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(232, 83, 62, 0.05);
+  }
+  #adminIndicator {
+    color: var(--bamboo);
+    font-weight: 700;
+    padding: 4px 10px;
+    background: rgba(95, 168, 63, 0.1);
+    border: 1px solid var(--bamboo);
+    border-radius: 10px;
+  }
+  .admin-logout {
+    cursor: pointer;
+    margin-left: 6px;
+    color: var(--ink-mute);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .admin-logout:hover { color: var(--accent); }
+
   /* ==== Chart ==== */
   .chart-wrap {
     background: var(--paper);
@@ -789,10 +830,10 @@
   <div id="homeView">
     <div class="period-bar" id="periodBar"></div>
 
-    <section>
+    <section id="overviewSection" style="display:none;">
       <div class="section-head">
         <h2>概況</h2>
-        <span class="en">OVERVIEW</span>
+        <span class="en">OVERVIEW · 管理者のみ</span>
         <div class="rule"></div>
       </div>
       <div class="stats-grid" id="statsGrid"></div>
@@ -807,7 +848,7 @@
       <div class="ranking-toolbar">
         <div class="search-box">
           <span class="search-icon">🔍</span>
-          <input type="text" id="playerSearch" placeholder="名前で検索…" autocomplete="off" oninput="onSearchInput(this.value)">
+          <input type="text" id="playerSearch" placeholder="名前で検索…" autocomplete="off">
           <span class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none;">×</span>
         </div>
         <div class="sort-hint">
@@ -872,6 +913,10 @@
 
   <footer>
     <div>© 沖縄健康麻雀教室</div>
+    <div class="admin-controls">
+      <span id="adminIndicator" style="display:none;">🔓 管理者モード <span class="admin-logout" onclick="adminLogout()">[ログアウト]</span></span>
+      <span id="adminLoginLink" class="admin-login-link" onclick="adminLogin()">管理者</span>
+    </div>
     <div id="dataInfo">SAMPLE DATA</div>
   </footer>
 </div>
@@ -885,6 +930,10 @@
 const DEFAULT_RESULTS_URL = "https://docs.google.com/spreadsheets/d/1UIW0AlUXw_wTGIqj5SgknXzDFJ6lntBK_wxB8AFbtDA/edit?gid=1476038675#gid=1476038675";
 const DEFAULT_MASTER_URL  = "https://docs.google.com/spreadsheets/d/1stJBEEFYzWuL6DEEKU-m2qdaMufWRgVTy1M2GEiiQOI/edit?gid=0#gid=0";
 const AUTO_REFRESH_MS = 300000;   // 5分ごとに自動更新(0で無効)
+
+// 管理者パスワード(変更するには下の文字列を書き換える)
+const ADMIN_PASSWORD = "19900811";
+const ADMIN_STORAGE_KEY = "mahjong_admin_auth";
 
 // ウマ・オカ
 const UMA = [30, 10, -10, -30];
@@ -991,9 +1040,6 @@ let allGames = []; // 計算済みの全対局
 let currentPeriod = 'all'; // 'all' | 'YYYY-MM'
 let currentView = 'home'; // 'home' | 'player'
 let currentPlayerNum = null;
-let searchQuery = ''; // 検索キーワード
-let sortKey = 'totalPt'; // 'totalPt' | 'avgRank'
-let sortDir = 'desc'; // 'asc' | 'desc'
 let autoRefreshTimer = null;
 
 // 初期マスタ(サンプル用)
@@ -1082,7 +1128,12 @@ function renderHome() {
 
   const filtered = filterByPeriod(allGames, currentPeriod);
   const players = aggregatePlayers(filtered);
-  renderHomeStats(filtered, players);
+  // 概況は管理者のみ
+  const overviewSection = document.getElementById('overviewSection');
+  if (overviewSection) {
+    overviewSection.style.display = isAdmin() ? '' : 'none';
+    if (isAdmin()) renderHomeStats(filtered, players);
+  }
   renderHomeRanking(players);
   renderHomeRecords(filtered);
 }
@@ -1134,49 +1185,8 @@ function renderHomeRanking(players) {
     document.getElementById('rankingWrap').innerHTML = `<div class="empty-state"><div class="emoji">🀄</div>この期間の記録はまだありません</div>`;
     return;
   }
-
-  // 元の並び順(累計pt降順)を保ったランクを保存
-  const withOrigRank = players.map((p, i) => ({ ...p, origRank: i + 1 }));
-
-  // ソート適用
-  const sorted = [...withOrigRank].sort((a, b) => {
-    let va, vb;
-    if (sortKey === 'avgRank') {
-      va = a.avgRank; vb = b.avgRank;
-    } else {
-      va = a.totalPt; vb = b.totalPt;
-    }
-    return sortDir === 'asc' ? va - vb : vb - va;
-  });
-
-  // 検索フィルタ
-  const q = searchQuery.trim().toLowerCase();
-  const filtered = q
-    ? sorted.filter(p => (p.name || '').toLowerCase().includes(q) || String(p.num).includes(q))
-    : sorted;
-
-  // ソートラベル更新
-  const sortLabel = document.getElementById('sortLabel');
-  if (sortLabel) {
-    const keyJp = sortKey === 'avgRank' ? '平均順位' : '累計pt';
-    const dirJp = sortDir === 'asc' ? '昇順' : '降順';
-    sortLabel.textContent = `${keyJp}(${dirJp})`;
-  }
-
-  if (filtered.length === 0) {
-    document.getElementById('rankingWrap').innerHTML = `
-      <div class="ranking">
-        <div class="no-results">
-          <div class="emoji">🔍</div>
-          「${escapeHtml(searchQuery)}」に該当する選手が見つかりません
-        </div>
-      </div>
-    `;
-    return;
-  }
-
-  const rows = filtered.map(p => {
-    const rank = p.origRank; // 表示される順位は「元の累計pt順位」
+  const rows = players.map((p, i) => {
+    const rank = i + 1;
     const rankClass = rank <= 3 ? `rank-${rank}` : '';
     const ptClass = p.totalPt >= 0 ? 'pos' : 'neg';
     const ptStr = (p.totalPt > 0 ? '+' : '') + p.totalPt.toFixed(1);
@@ -1184,7 +1194,7 @@ function renderHomeRanking(players) {
       <tr class="row" onclick="navigateTo('player=${p.num}')">
         <td class="rank-cell ${rankClass}">${rank}</td>
         <td>
-          <span class="player-num">#${p.num}</span><span class="player-name">${escapeHtml(p.name)}</span>
+          <span class="player-num">#${p.num}</span><span class="player-name">${p.name}</span>
           <span class="games-mini">${p.games}半荘</span>
         </td>
         <td class="num"><span class="points ${ptClass}">${ptStr}</span></td>
@@ -1201,13 +1211,6 @@ function renderHomeRanking(players) {
       </tr>
     `;
   }).join('');
-
-  const arrow = (key) => {
-    if (sortKey !== key) return '<span class="sort-arrow">▲▼</span>';
-    return sortDir === 'asc' ? '<span class="sort-arrow">▲</span>' : '<span class="sort-arrow">▼</span>';
-  };
-  const activeClass = (key) => sortKey === key ? 'active' : '';
-
   document.getElementById('rankingWrap').innerHTML = `
     <div class="ranking">
       <table>
@@ -1215,8 +1218,8 @@ function renderHomeRanking(players) {
           <tr>
             <th class="center">順位</th>
             <th>プレイヤー</th>
-            <th class="num sortable ${activeClass('totalPt')}" onclick="setSort('totalPt')">累計pt${arrow('totalPt')}</th>
-            <th class="num sortable ${activeClass('avgRank')}" onclick="setSort('avgRank')">平均順位${arrow('avgRank')}</th>
+            <th class="num">累計pt</th>
+            <th class="num">平均順位</th>
             <th class="center">着順分布</th>
             <th></th>
           </tr>
@@ -1225,40 +1228,6 @@ function renderHomeRanking(players) {
       </table>
     </div>
   `;
-}
-
-function escapeHtml(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-// ソートキー切替(同じキーなら方向トグル、違うキーなら初期方向)
-function setSort(key) {
-  if (sortKey === key) {
-    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-  } else {
-    sortKey = key;
-    // 平均順位は「小さいほど良い」ので昇順が初期、累計ptは降順が初期
-    sortDir = key === 'avgRank' ? 'asc' : 'desc';
-  }
-  renderHome();
-}
-
-// 検索
-function onSearchInput(v) {
-  searchQuery = v;
-  const clear = document.getElementById('searchClear');
-  if (clear) clear.style.display = v ? '' : 'none';
-  renderHome();
-}
-function clearSearch() {
-  searchQuery = '';
-  const el = document.getElementById('playerSearch');
-  if (el) el.value = '';
-  const clear = document.getElementById('searchClear');
-  if (clear) clear.style.display = 'none';
-  renderHome();
 }
 
 function renderHomeRecords(games) {
@@ -1666,8 +1635,52 @@ function toggleSource() {
 }
 
 // ============================================================
+// 管理者ログイン
+// ============================================================
+function isAdmin() {
+  try {
+    return localStorage.getItem(ADMIN_STORAGE_KEY) === ADMIN_PASSWORD;
+  } catch (e) {
+    return false;
+  }
+}
+
+function refreshAdminUI() {
+  const link = document.getElementById('adminLoginLink');
+  const indicator = document.getElementById('adminIndicator');
+  if (isAdmin()) {
+    if (link) link.style.display = 'none';
+    if (indicator) indicator.style.display = '';
+  } else {
+    if (link) link.style.display = '';
+    if (indicator) indicator.style.display = 'none';
+  }
+}
+
+function adminLogin() {
+  const pw = prompt('管理者パスワードを入力してください');
+  if (pw === null) return; // キャンセル
+  if (pw === ADMIN_PASSWORD) {
+    try { localStorage.setItem(ADMIN_STORAGE_KEY, pw); } catch (e) {}
+    refreshAdminUI();
+    renderCurrentView();
+    alert('管理者モードに切り替えました');
+  } else {
+    alert('パスワードが違います');
+  }
+}
+
+function adminLogout() {
+  try { localStorage.removeItem(ADMIN_STORAGE_KEY); } catch (e) {}
+  refreshAdminUI();
+  renderCurrentView();
+}
+
+// ============================================================
 // 初期化
 // ============================================================
+refreshAdminUI();
+
 if (DEFAULT_RESULTS_URL) {
   document.getElementById('sheetUrl').value = DEFAULT_RESULTS_URL;
   document.getElementById('masterUrl').value = DEFAULT_MASTER_URL;
