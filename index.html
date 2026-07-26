@@ -298,6 +298,113 @@
     margin-top: 6px;
   }
 
+  /* ==== Ranking toolbar (search + sort) ==== */
+  .ranking-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .search-box {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 380px;
+    display: flex;
+    align-items: center;
+    background: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 0 12px;
+    transition: all 0.15s;
+  }
+  .search-box:focus-within {
+    border-color: var(--accent);
+    background: var(--paper);
+    box-shadow: 0 0 0 3px rgba(232, 83, 62, 0.1);
+  }
+  .search-icon {
+    font-size: 14px;
+    opacity: 0.6;
+    margin-right: 8px;
+  }
+  .search-box input {
+    flex: 1;
+    padding: 11px 0;
+    border: none;
+    background: transparent;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+  }
+  .search-box input::placeholder {
+    color: var(--ink-mute);
+  }
+  .search-clear {
+    cursor: pointer;
+    color: var(--ink-mute);
+    font-size: 18px;
+    font-weight: 700;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.1s;
+  }
+  .search-clear:hover { color: var(--accent); }
+  .sort-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--bg-soft);
+    border-radius: 12px;
+    border: 2px dashed var(--line);
+    font-size: 12px;
+  }
+  .sort-hint .hint-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--ink-mute);
+  }
+  .sort-hint #sortLabel {
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* Sortable table headers */
+  .ranking th.sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: background 0.1s;
+  }
+  .ranking th.sortable:hover {
+    background: var(--gold);
+    color: var(--ink);
+  }
+  .ranking th.sortable .sort-arrow {
+    display: inline-block;
+    margin-left: 4px;
+    opacity: 0.3;
+    font-size: 9px;
+  }
+  .ranking th.sortable.active .sort-arrow {
+    opacity: 1;
+    color: var(--accent);
+  }
+
+  /* No results state */
+  .no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--ink-mute);
+    font-family: 'Shippori Mincho', serif;
+    font-size: 14px;
+  }
+  .no-results .emoji { font-size: 28px; opacity: 0.5; margin-bottom: 8px; }
+
   /* ==== Ranking table ==== */
   .ranking {
     background: var(--paper);
@@ -697,6 +804,17 @@
         <span class="en">RANKING</span>
         <div class="rule"></div>
       </div>
+      <div class="ranking-toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="playerSearch" placeholder="名前で検索…" autocomplete="off" oninput="onSearchInput(this.value)">
+          <span class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none;">×</span>
+        </div>
+        <div class="sort-hint">
+          <span class="hint-label">SORT</span>
+          <span id="sortLabel">累計pt(降順)</span>
+        </div>
+      </div>
       <div id="rankingWrap"></div>
     </section>
 
@@ -873,6 +991,9 @@ let allGames = []; // 計算済みの全対局
 let currentPeriod = 'all'; // 'all' | 'YYYY-MM'
 let currentView = 'home'; // 'home' | 'player'
 let currentPlayerNum = null;
+let searchQuery = ''; // 検索キーワード
+let sortKey = 'totalPt'; // 'totalPt' | 'avgRank'
+let sortDir = 'desc'; // 'asc' | 'desc'
 let autoRefreshTimer = null;
 
 // 初期マスタ(サンプル用)
@@ -1013,8 +1134,49 @@ function renderHomeRanking(players) {
     document.getElementById('rankingWrap').innerHTML = `<div class="empty-state"><div class="emoji">🀄</div>この期間の記録はまだありません</div>`;
     return;
   }
-  const rows = players.map((p, i) => {
-    const rank = i + 1;
+
+  // 元の並び順(累計pt降順)を保ったランクを保存
+  const withOrigRank = players.map((p, i) => ({ ...p, origRank: i + 1 }));
+
+  // ソート適用
+  const sorted = [...withOrigRank].sort((a, b) => {
+    let va, vb;
+    if (sortKey === 'avgRank') {
+      va = a.avgRank; vb = b.avgRank;
+    } else {
+      va = a.totalPt; vb = b.totalPt;
+    }
+    return sortDir === 'asc' ? va - vb : vb - va;
+  });
+
+  // 検索フィルタ
+  const q = searchQuery.trim().toLowerCase();
+  const filtered = q
+    ? sorted.filter(p => (p.name || '').toLowerCase().includes(q) || String(p.num).includes(q))
+    : sorted;
+
+  // ソートラベル更新
+  const sortLabel = document.getElementById('sortLabel');
+  if (sortLabel) {
+    const keyJp = sortKey === 'avgRank' ? '平均順位' : '累計pt';
+    const dirJp = sortDir === 'asc' ? '昇順' : '降順';
+    sortLabel.textContent = `${keyJp}(${dirJp})`;
+  }
+
+  if (filtered.length === 0) {
+    document.getElementById('rankingWrap').innerHTML = `
+      <div class="ranking">
+        <div class="no-results">
+          <div class="emoji">🔍</div>
+          「${escapeHtml(searchQuery)}」に該当する選手が見つかりません
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const rows = filtered.map(p => {
+    const rank = p.origRank; // 表示される順位は「元の累計pt順位」
     const rankClass = rank <= 3 ? `rank-${rank}` : '';
     const ptClass = p.totalPt >= 0 ? 'pos' : 'neg';
     const ptStr = (p.totalPt > 0 ? '+' : '') + p.totalPt.toFixed(1);
@@ -1022,7 +1184,7 @@ function renderHomeRanking(players) {
       <tr class="row" onclick="navigateTo('player=${p.num}')">
         <td class="rank-cell ${rankClass}">${rank}</td>
         <td>
-          <span class="player-num">#${p.num}</span><span class="player-name">${p.name}</span>
+          <span class="player-num">#${p.num}</span><span class="player-name">${escapeHtml(p.name)}</span>
           <span class="games-mini">${p.games}半荘</span>
         </td>
         <td class="num"><span class="points ${ptClass}">${ptStr}</span></td>
@@ -1039,6 +1201,13 @@ function renderHomeRanking(players) {
       </tr>
     `;
   }).join('');
+
+  const arrow = (key) => {
+    if (sortKey !== key) return '<span class="sort-arrow">▲▼</span>';
+    return sortDir === 'asc' ? '<span class="sort-arrow">▲</span>' : '<span class="sort-arrow">▼</span>';
+  };
+  const activeClass = (key) => sortKey === key ? 'active' : '';
+
   document.getElementById('rankingWrap').innerHTML = `
     <div class="ranking">
       <table>
@@ -1046,8 +1215,8 @@ function renderHomeRanking(players) {
           <tr>
             <th class="center">順位</th>
             <th>プレイヤー</th>
-            <th class="num">累計pt</th>
-            <th class="num">平均順位</th>
+            <th class="num sortable ${activeClass('totalPt')}" onclick="setSort('totalPt')">累計pt${arrow('totalPt')}</th>
+            <th class="num sortable ${activeClass('avgRank')}" onclick="setSort('avgRank')">平均順位${arrow('avgRank')}</th>
             <th class="center">着順分布</th>
             <th></th>
           </tr>
@@ -1056,6 +1225,40 @@ function renderHomeRanking(players) {
       </table>
     </div>
   `;
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ソートキー切替(同じキーなら方向トグル、違うキーなら初期方向)
+function setSort(key) {
+  if (sortKey === key) {
+    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortKey = key;
+    // 平均順位は「小さいほど良い」ので昇順が初期、累計ptは降順が初期
+    sortDir = key === 'avgRank' ? 'asc' : 'desc';
+  }
+  renderHome();
+}
+
+// 検索
+function onSearchInput(v) {
+  searchQuery = v;
+  const clear = document.getElementById('searchClear');
+  if (clear) clear.style.display = v ? '' : 'none';
+  renderHome();
+}
+function clearSearch() {
+  searchQuery = '';
+  const el = document.getElementById('playerSearch');
+  if (el) el.value = '';
+  const clear = document.getElementById('searchClear');
+  if (clear) clear.style.display = 'none';
+  renderHome();
 }
 
 function renderHomeRecords(games) {
