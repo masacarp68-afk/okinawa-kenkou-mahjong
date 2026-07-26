@@ -848,7 +848,7 @@
       <div class="ranking-toolbar">
         <div class="search-box">
           <span class="search-icon">🔍</span>
-          <input type="text" id="playerSearch" placeholder="名前で検索…" autocomplete="off">
+          <input type="text" id="playerSearch" placeholder="名前で検索…" autocomplete="off" oninput="onSearchInput(this.value)">
           <span class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none;">×</span>
         </div>
         <div class="sort-hint">
@@ -1041,6 +1041,9 @@ let currentPeriod = 'all'; // 'all' | 'YYYY-MM'
 let currentView = 'home'; // 'home' | 'player'
 let currentPlayerNum = null;
 let autoRefreshTimer = null;
+let searchQuery = ''; // 検索キーワード
+let sortKey = 'totalPt'; // 'totalPt' | 'avgRank'
+let sortDir = 'desc'; // 'asc' | 'desc'
 
 // 初期マスタ(サンプル用)
 PLAYER_MASTER_SAMPLE.forEach(p => { playerMaster[p.num] = p.name; });
@@ -1185,8 +1188,49 @@ function renderHomeRanking(players) {
     document.getElementById('rankingWrap').innerHTML = `<div class="empty-state"><div class="emoji">🀄</div>この期間の記録はまだありません</div>`;
     return;
   }
-  const rows = players.map((p, i) => {
-    const rank = i + 1;
+
+  // 元の並び順(累計pt降順)を保ったランクを保存
+  const withOrigRank = players.map((p, i) => ({ ...p, origRank: i + 1 }));
+
+  // ソート適用
+  const sorted = [...withOrigRank].sort((a, b) => {
+    let va, vb;
+    if (sortKey === 'avgRank') {
+      va = a.avgRank; vb = b.avgRank;
+    } else {
+      va = a.totalPt; vb = b.totalPt;
+    }
+    return sortDir === 'asc' ? va - vb : vb - va;
+  });
+
+  // 検索フィルタ
+  const q = searchQuery.trim().toLowerCase();
+  const filtered = q
+    ? sorted.filter(p => (p.name || '').toLowerCase().includes(q) || String(p.num).includes(q))
+    : sorted;
+
+  // ソートラベル更新
+  const sortLabel = document.getElementById('sortLabel');
+  if (sortLabel) {
+    const keyJp = sortKey === 'avgRank' ? '平均順位' : '累計pt';
+    const dirJp = sortDir === 'asc' ? '昇順' : '降順';
+    sortLabel.textContent = `${keyJp}(${dirJp})`;
+  }
+
+  if (filtered.length === 0) {
+    document.getElementById('rankingWrap').innerHTML = `
+      <div class="ranking">
+        <div class="no-results">
+          <div class="emoji">🔍</div>
+          「${escapeHtml(searchQuery)}」に該当する選手が見つかりません
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const rows = filtered.map(p => {
+    const rank = p.origRank;
     const rankClass = rank <= 3 ? `rank-${rank}` : '';
     const ptClass = p.totalPt >= 0 ? 'pos' : 'neg';
     const ptStr = (p.totalPt > 0 ? '+' : '') + p.totalPt.toFixed(1);
@@ -1194,7 +1238,7 @@ function renderHomeRanking(players) {
       <tr class="row" onclick="navigateTo('player=${p.num}')">
         <td class="rank-cell ${rankClass}">${rank}</td>
         <td>
-          <span class="player-num">#${p.num}</span><span class="player-name">${p.name}</span>
+          <span class="player-num">#${p.num}</span><span class="player-name">${escapeHtml(p.name)}</span>
           <span class="games-mini">${p.games}半荘</span>
         </td>
         <td class="num"><span class="points ${ptClass}">${ptStr}</span></td>
@@ -1211,6 +1255,13 @@ function renderHomeRanking(players) {
       </tr>
     `;
   }).join('');
+
+  const arrow = (key) => {
+    if (sortKey !== key) return '<span class="sort-arrow">▲▼</span>';
+    return sortDir === 'asc' ? '<span class="sort-arrow">▲</span>' : '<span class="sort-arrow">▼</span>';
+  };
+  const activeClass = (key) => sortKey === key ? 'active' : '';
+
   document.getElementById('rankingWrap').innerHTML = `
     <div class="ranking">
       <table>
@@ -1218,8 +1269,8 @@ function renderHomeRanking(players) {
           <tr>
             <th class="center">順位</th>
             <th>プレイヤー</th>
-            <th class="num">累計pt</th>
-            <th class="num">平均順位</th>
+            <th class="num sortable ${activeClass('totalPt')}" onclick="setSort('totalPt')">累計pt${arrow('totalPt')}</th>
+            <th class="num sortable ${activeClass('avgRank')}" onclick="setSort('avgRank')">平均順位${arrow('avgRank')}</th>
             <th class="center">着順分布</th>
             <th></th>
           </tr>
@@ -1228,6 +1279,39 @@ function renderHomeRanking(players) {
       </table>
     </div>
   `;
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function setSort(key) {
+  if (sortKey === key) {
+    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortKey = key;
+    // 平均順位は「小さいほど良い」ので昇順が初期、累計ptは降順が初期
+    sortDir = key === 'avgRank' ? 'asc' : 'desc';
+  }
+  renderHome();
+}
+
+function onSearchInput(v) {
+  searchQuery = v;
+  const clear = document.getElementById('searchClear');
+  if (clear) clear.style.display = v ? '' : 'none';
+  renderHome();
+}
+
+function clearSearch() {
+  searchQuery = '';
+  const el = document.getElementById('playerSearch');
+  if (el) el.value = '';
+  const clear = document.getElementById('searchClear');
+  if (clear) clear.style.display = 'none';
+  renderHome();
 }
 
 function renderHomeRecords(games) {
